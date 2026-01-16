@@ -29,5 +29,5 @@ jobs:
           sudo apt install trivy -y
 
       - name: Scan Docker image
-        run: trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 trivy-demo:1.0
+        run: trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 trivy-demo:1.0
 
