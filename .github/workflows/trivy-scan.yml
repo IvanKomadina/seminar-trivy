@@ -1,0 +1,33 @@
+name: CI Trivy Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        run: docker build -t trivy-demo:1.0 .
+
+      - name: Install Trivy
+        run: |
+          sudo apt update
+          sudo apt install wget apt-transport-https gnupg lsb-release -y
+          wget -qO- https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy-archive-keyring.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt update
+          sudo apt install trivy -y
+
+      - name: Scan Docker image
+        run: trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 trivy-demo:1.0
+
